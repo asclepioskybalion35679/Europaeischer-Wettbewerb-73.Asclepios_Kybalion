@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EU Flagge Sternenhimmel & Projekt</title>
+<style>
+body {
+  margin: 0;
+  background: black;
+  overflow-x: hidden;
+  font-family: 'Poppins', sans-serif;
+  color: white;
+}
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+.content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin-top: 100vh;
+  padding: 50px 20px;
+}
+.media-section {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+  gap: 20px;
+}
+.media-item {
+  width: 30%;
+  position: relative;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 48px;
+  font-weight: bold;
+  color: gold;
+  text-shadow: 0 0 12px white;
+}
+.extra-section {
+  margin-top: 60px;
+  padding: 40px;
+  background: rgba(20, 20, 20, 0.85);
+  border-radius: 15px;
+  text-align: center;
+}
+.extra-section h2 {
+  color: gold;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px yellow;
+}
+.copyright {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 16px;
+  color: #aaa;
+}
+</style>
+</head>
+<body>
+<canvas id="starCanvas"></canvas>
+<script>
+// Sternenanimation bleibt unverändert
+const canvas=document.getElementById('starCanvas');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+let stars=[], orbitStars=[];
+const TOTAL_STARS=140, EU_COUNT=12;
+let centerX=canvas.width/2, centerY=canvas.height/2;
+const ORBIT_RADIUS=Math.min(canvas.width,canvas.height)*0.15, EU_RADIUS=Math.min(canvas.width,canvas.height)*0.12;
+let startTime=Date.now(), orbitFormed=false, flagFormed=false;
+let orbitIndices=[];
+while(orbitIndices.length<EU_COUNT){let idx=Math.floor(Math.random()*TOTAL_STARS); if(!orbitIndices.includes(idx)) orbitIndices.push(idx);}
+function createStar(i){return {id:i,x:Math.random()*canvas.width,y:Math.random()*canvas.height,size:Math.random()*2+0.5,vx:(Math.random()-0.5)*1,vy:(Math.random()-0.5)*1,alpha:Math.random()*0.5+0.85,glow:Math.random()*0.6+0.4,isOrbitStar:orbitIndices.includes(i),orbitAngle:null};}
+for(let i=0;i<TOTAL_STARS;i++) stars.push(createStar(i));
+function setupOrbitStars(){orbitIndices.forEach((i,index)=>{let s=stars[i]; s.orbitAngle=(index*2*Math.PI)/EU_COUNT; s.size=2;}); orbitStars=orbitIndices.map(i=>stars[i]);}
+setupOrbitStars();
+function drawStarShape(x,y,r,n,inset){ctx.beginPath();for(let i=0;i<n*2;i++){const radius=i%2===0?r:r*inset; const angle=Math.PI*i/n-Math.PI/2; ctx.lineTo(x+Math.cos(angle)*radius, y+Math.sin(angle)*radius);} ctx.closePath(); ctx.fill();}
+function animate(){ctx.clearRect(0,0,canvas.width,canvas.height); let elapsed=(Date.now()-startTime)/1000;
+stars.forEach((s,i)=>{s.alpha=Math.min(1,s.alpha+0.002); s.x+=s.vx; s.y+=s.vy; if(s.x<0||s.x>canvas.width) s.vx*=-1; if(s.y<0||s.y>canvas.height) s.vy*=-1;
+if(s.isOrbitStar){ if(elapsed>=3 && !orbitFormed){ s.orbitX=centerX+ORBIT_RADIUS*Math.cos(s.orbitAngle); s.orbitY=centerY+ORBIT_RADIUS*Math.sin(s.orbitAngle); s.x+=(s.orbitX-s.x)*0.08; s.y+=(s.orbitY-s.y)*0.08; if(Math.abs(s.x-s.orbitX)<0.5 && Math.abs(s.y-s.orbitY)<0.5) orbitFormed=true;} else if(orbitFormed && !flagFormed){ orbitStars.forEach((os,j)=>{let targetAngle=(j*2*Math.PI)/EU_COUNT; os.x+=(centerX+EU_RADIUS*Math.cos(targetAngle)-os.x)*0.02; os.y+=(centerY-EU_RADIUS*Math.sin(targetAngle)-os.y)*0.02; os.size+=(5-os.size)*0.02;}); if(orbitStars.every(os=>Math.abs(os.x-(centerX+EU_RADIUS*Math.cos(os.orbitAngle)))<1 && Math.abs(os.y-(centerY+EU_RADIUS*Math.sin(os.orbitAngle)))<1)) flagFormed=true;}} ctx.save(); ctx.globalAlpha=s.alpha;
+if(s.isOrbitStar && (orbitFormed||flagFormed)){ ctx.fillStyle='yellow'; ctx.shadowColor='gold'; ctx.shadowBlur=15+s.glow*10; drawStarShape(s.x,s.y,s.size,5,0.5);} else {ctx.fillStyle='white'; ctx.shadowColor='rgba(255,255,255,'+(0.85+s.glow)+')'; ctx.shadowBlur=12+s.glow*10; ctx.beginPath(); ctx.arc(s.x,s.y,Math.max(s.size,0.1),0,Math.PI*2); ctx.fill();} ctx.restore();}); requestAnimationFrame(animate);}
+animate();
+window.addEventListener('resize',()=>{canvas.width=window.innerWidth; canvas.height=window.innerHeight; centerX=canvas.width/2; centerY=canvas.height/2;});
+</script>
+
+<div class="content">
+  <div class="media-section">
+    <div class="media-item">I.</div>
+    <div class="media-item">II.</div>
+    <div class="media-item">III.</div>
+  </div>
+
+  <div class="extra-section">
+    <h2>75 Jahre – Deine Rechte, deine Stimme!</h2>
+  </div>
+  <div class="copyright">© Alexander Kleemann</div>
+</div>
+</body>
+</html>
